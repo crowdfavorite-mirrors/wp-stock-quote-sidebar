@@ -50,12 +50,13 @@ add_filter( 'plugin_action_links', 'sqsb_plugin_action_links', 10, 2 );
 //Fix cannot redeclare problem
 if ( !(function_exists('insert_sqsb_header_code')) ) {
 function insert_sqsb_header_code () {
+    $url = trailingslashit(plugins_url(null, __FILE__));
 	echo '
-	<link rel="stylesheet" href="'.get_settings('siteurl').'/wp-content/plugins/stock-quote-sidebar/sqsbstyle.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="'.$url.'sqsbstyle.css" type="text/css" media="screen" />
     <!-- The line below starts the conditional comment -->
     <!--[if IE]>
       <style type="text/css">
-        body {behavior: url('.get_settings('siteurl').'/wp-content/plugins/stock-quote-sidebar/csshover.htc);}
+        body {behavior: url('.$url.'csshover.htc);}
       </style>
     <![endif]--> <!-- This ends the conditional comment -->
     <script language="javascript" type="text/javascript">
@@ -73,7 +74,7 @@ function insert_sqsb_header_code () {
 
 function admin_add_stockquotesidebar() {
 	// Add menu under Options:
-	add_options_page('Stock Quote Sidebar Options', 'Stock Quote Sidebar', 8, __FILE__, 'admin_stockquotesidebar');	
+	add_options_page('Stock Quote Sidebar Options', 'Stock Quote Sidebar', 8, __FILE__, 'admin_stockquotesidebar');
 	// Create option in options database if not there already:
 	$options = array();
 	//$text_to_replace = ;
@@ -95,13 +96,13 @@ function admin_add_stockquotesidebar() {
     $options['timeform'] = 'H:i';
     $options['displayname'] = 'symbol';
     $options['randomquotequantity'] = 0;
-		$options['pointsorpercent'] = 'points';	
+		$options['pointsorpercent'] = 'points';
 add_option('stockquotesidebar', $options, 'Options for the Stock Quote Sidebar plugin');
 } //end admin_add_stockquotesidebar()
 
 
 function admin_stockquotesidebar() {
-	
+
 	// Uncomment for error reporting on options page
 	//error_reporting(E_ALL);
 	// See if user has submitted form
@@ -109,7 +110,7 @@ function admin_stockquotesidebar() {
 		$options = array();
 		$store_symbols = array();
 		$store_static_symbols = array();
-		
+
 		$stocksymbols = $_POST['sqsbsymbols'];
         $staticstocksymbols = $_POST['sqsbstaticsymbols'];
         $yahoosite = $_POST['yahoosite'];
@@ -145,13 +146,13 @@ function admin_stockquotesidebar() {
     $options['timeform'] = $timeform;
     $options['displayname'] = $displayname;
     $options['randomquotequantity'] = $randomquotequantity;
- 		$options['pointsorpercent'] = $pointsorpercent;	
- 		
+ 		$options['pointsorpercent'] = $pointsorpercent;
+
 		// Remember to put all the other options into the array or they'll get lost!
 		update_option('stockquotesidebar', $options);
 		echo '<div class="updated"><p>Plugin settings saved.</p></div>';
 	}
-	
+
 	// Draw the Options page for the plugin.
 	$options = get_option('stockquotesidebar');
 	$stocksymbols = $options['sqsbsymbols'];
@@ -166,14 +167,14 @@ function admin_stockquotesidebar() {
   $pointsorpercent = $options['pointsorpercent'];
 	$symbol_list = '';
   $static_symbol_list = '';
-  
+
   // Catch empty lists and prevent benign error message
 	if(!empty($stocksymbols)) {
 		foreach ($stocksymbols AS $symindex => $symbol) {
 			$symbol_list .= "$symbol\n";
 		}
 	}
-	
+
 	// Catch empty lists and prevent benign error message
 	if(!empty($staticstocksymbols)) {
 		foreach ($staticstocksymbols AS $staticsymindex => $staticsymbol) {
@@ -222,7 +223,7 @@ function admin_stockquotesidebar() {
 END;
 
 echo "      <option value='/t?s=' ";
-  if($yahoochartrange == '/t?s=') { echo 'SELECTED';} 
+  if($yahoochartrange == '/t?s=') { echo 'SELECTED';}
   echo ">1 Day</option>";
 echo "      <option value='/v?s=' ";
   if($yahoochartrange == '/v?s=') { echo 'SELECTED';}
@@ -233,7 +234,7 @@ echo "      <option value='/c/bb/n/' ";
 
  echo '       </select>
 <p/>';
-  
+
 
 echo '<b>Display Change as Points or Percent:</b> Note that many sidebars may not have space for both<br/>
 				<select name="pointsorpercent" id="pointsorpercent">';
@@ -259,7 +260,7 @@ echo '<b>Display Change as Points or Percent:</b> Note that many sidebars may no
                 <option value="pointsandpercent">Both Points and Percent</option></select>';
             }
 echo <<<END
-<p/>     
+<p/>
         <b>Date and Time Format:</b>  Use parameters from the php <a href="http://www.php.net/date">date()</a> function.  The defaults are Y-m-d, meaning 2005-10-25 for date, and H:i, meaning 16:25 for time.<br/>
         Date: <input type="text" name="dateform" id="dateform" size="10" value="$dateform">
         Time: <input type="text" name="timeform" id="timeform" size="10" value="$timeform"><p/>
@@ -277,7 +278,7 @@ echo '  <b>Symbol Display:</b>  Whether to display the symbol or the company nam
             else {
                 echo '<option value="symbol" selected>Stock Symbol</option>
                 <option value="company">Company Name</option></select>';
-            }                
+            }
             echo <<<END
             <p/>
         <b>Stock Symbols to Always Display:</b>  One per line<br/>
@@ -354,7 +355,7 @@ function sqCSV2Array($data,$delim=',',$enclosure='"')
 }
 
 function sqArray2CSV($data)
-{   
+{
     $stocksymbols = "";
     while (list($key,$value) = each($data)) {
         $stocksymbols .= $value . ',';
@@ -371,15 +372,15 @@ function sqList2CSV($data)
 }
 
 function get_stock_quote($passedsymbols = "getfromdb") {
-		
+
     //For plugin execution timing
     $sq_time_start = microtime(false);
-		
+
     //The following line is for debug purposes only - it should usually be commented
     //error_reporting(E_ALL);
     $options = get_option('stockquotesidebar');
     $sqsbstatsymbols = $options['sqsbstatsymbols'];
-    $sqsbsymbols  = $options['sqsbsymbols'];	
+    $sqsbsymbols  = $options['sqsbsymbols'];
     $yahoosite = $options['yahoosite'];
     $yahoochartsite = $options['yahoochartsite'];
     $yahoochartrange = $options['yahoochartrange'];
@@ -402,11 +403,11 @@ if($passedsymbols == "getfromdb") {
     else {
         $sqsballsymbols = $sqsbstatsymbols;
     }
-    
+
     // Deal with ^DJI conversion to INDU
     $oldDJI = "^DJI";
     $newDJI = "INDU";
-    
+
     for($i=0;$i<count($sqsballsymbols);$i++) {
 		if ($sqsballsymbols[$i] == $oldDJI) {
 			$sqsballsymbols[$i] = $newDJI;
@@ -440,7 +441,7 @@ else {
 	else {
 		echo "<table border='0' cellpadding='0' cellspacing='0'>";
 		$stocklist=sqCSV2Array($fp);
-        
+
 		// The date and time stamps will be derived from the updated time of the first symbol in the list
 		$date = trim($stocklist[0][3], '\"');
 		$time = trim($stocklist[0][4], '\"');
@@ -455,19 +456,19 @@ else {
 			$low = $stocklist[$i][8];
 			$volume = $stocklist[$i][9];
 			$prevclose = $stocklist[$i][10];
-			
+
 			if ($prevclose == "N/A") {
 				$percentchange = "N/A";
 			}
-			
+
 			else if ($prevclose == 0) {
 				$percentchange = 0;
 			}
-			
+
 			else {
 				$percentchange = ($change / $prevclose) * 100;
 			}
-			
+
             //Display either the symbol or the company name in the first column, as configured
             if($displayname == 'symbol') {
                 $displaystocksymbol = $stocksymbol;
@@ -475,7 +476,7 @@ else {
             else if($displayname == 'company') {
                 $displaystocksymbol = ucwords(strtolower($company));
             }
-			
+
 			//Provide nicer (and short) names for common indexes
 			if($stocksymbol == "^DJI") {
 				$displaystocksymbol = "DJIA";
@@ -509,7 +510,7 @@ else {
                 echo '<td colspan="9"><hr id="sqsbhr" noshade="noshade" size="1"/></td>';
             }
             else {
-			
+
 							//Click-through lookup URL
        				$sqclickurl = sprintf("http://%s/q?s=%s", $yahoosite, $stocksymbol);
               //$charturl = sprintf("%s/t?s=%s", $yahoochartsite, $stocksymbol);
@@ -540,14 +541,14 @@ else {
 	       					if (is_numeric($percentchange)) {
 	       						printf("%+8.2f%%", $percentchange);
 	       					}
-	       					
+
 	       					else {
 	       						echo $percentchange;
 	       					}
-	       						
+
 	       					echo "</a></td>";
 	       				}
-	       			}	
+	       			}
 
     					else if($pointsorpercent == "pointsandpercent") {
     						if($change < 0) {
@@ -571,15 +572,15 @@ else {
 	       					if (is_numeric($percentchange)) {
 	       						printf("%+8.2f%%", $percentchange);
 	       					}
-	       					
+
 	       					else {
 	       						echo $percentchange;
 	       					}
-	       					
+
 	       					echo "</a></td>";
 	       				}
 	       			}
-	       		
+
 	       			else {
 	       				if($change < 0) {
 	       					echo "<td style='white-space: nowrap;' width='45' align='right'><a href='$chartclickurl' class='sqsbchart'><img alt='chart' src='$charturl' border='0' width='192' height='96'/><font color='red'>$change</font></a></td>";
@@ -590,10 +591,10 @@ else {
 	       				else {
 	       					echo "<td style='white-space: nowrap;' width='45' align='right'><a class='sqsbchart' href='$chartclickurl'><img alt='chart' src='$charturl' border='0' width='192' height='96'/>$change</a></td>";
 	       				}
-	       			}	       			
+	       			}
             }
     		echo "</tr>";
-				
+
 		}
 		echo "</table>";
         //Use the date and time formats configured in plugin options
@@ -601,7 +602,7 @@ else {
         $sqdisplaytime = date ( $timeform, strtotime( $time ) );
 		//Below line can be changed to fit style of site.
 		echo "<center><font id='stockfooter'>$sqdisplaydate $sqdisplaytime</font></center>";
-		
+
 		//Uncomment the following two lines to enable timing of this plugin's execution
 		//$sq_time_run = microtime(false) - $sq_time_start;
 		//echo	"<center><font id='stockfooter'>Runtime $sq_time_run seconds</font></center>";
